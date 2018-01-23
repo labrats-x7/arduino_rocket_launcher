@@ -91,47 +91,45 @@ void getDataFromPC() {
 void analyze_byte() {
 
   if(x&(1<<0))   {    //bit 0 is set
-    spd == 1;
+    spd = 1;
   }
   else  {
-    spd == 0;
+    spd = 0;
   }
   
   if(x&(1<<1))   {    //bit 1 is set
-    //go_azi_left == 1;
-    digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on
+    go_azi_left = 1;
   }  
   else {
-    //go_azi_left == 0;
-    digitalWrite(LED_BUILTIN, LOW);   // turn the LED off
+    go_azi_left = 0;
   }
   
   if(x&(1<<2))  {    //bit 2 is set
-    go_azi_right == 1;
+    go_azi_right = 1;
   }
   else  {
-    go_azi_right == 0;
+    go_azi_right = 0;
   }
 
   if(x&(1<<3))  {    //bit 3 is set
-    go_ele_down == 1;
+    go_ele_down = 1;
   }
   else  {
-    go_ele_down == 0;
+    go_ele_down = 0;
   }  
 
   if(x&(1<<4))  {    //bit 4 is set
-    go_ele_up == 1;
+    go_ele_up = 1;
   }
   else  {
-    go_ele_up == 0;
+    go_ele_up = 0;
   }
 
   if(x&(1<<5))   {    //bit 5 is set
-    fire_shot == 1;
+    fire_shot = 1;
   }
   else  {
-    fire_shot == 0;
+    fire_shot = 0;
   }
 /* Fire 2 & 3 alt
   if(x&(1<<6))   {    //bit 6 is set
@@ -149,7 +147,7 @@ void setspeed() {
   if(spd == 1)  {
     spd_var = spd_high;
   }
-  else  {
+  if(spd == 0)  {
     spd_var = spd_low;
   }
 }
@@ -158,15 +156,16 @@ void setspeed() {
 void azimuth()  {
   
     // turn left
-    if (go_azi_left == 1 && azi_left_stop_state == 0 && go_azi_right == 0) {
+    if (go_azi_left == 1 /*&& azi_left_stop_state == 0 && go_azi_right == 0 */) {
       azi_motor.run(RELEASE);  // turn on azimuth motor
       azi_motor.setSpeed(spd_var);
       azi_motor.run(FORWARD);
       Serial.println("azimuth left");
+      digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on
     }
 
     // turn right
-    if (go_azi_right == 1 && azi_right_stop_state == 0 && go_azi_left == 0) {
+    if (go_azi_right == 1 /* && azi_right_stop_state == 0 && go_azi_left == 0 */) {
       azi_motor.run(RELEASE);  // turn on azimuth motor
       azi_motor.setSpeed(spd_var);
       azi_motor.run(BACKWARD);
@@ -175,7 +174,8 @@ void azimuth()  {
     
     // power down azimuth motor
     if (go_azi_left == 0 && go_azi_right == 0)  {
-      azi_motor.run(RELEASE); 
+      azi_motor.run(RELEASE);
+      digitalWrite(LED_BUILTIN, LOW);   // turn the LED off
     }
 }
 
