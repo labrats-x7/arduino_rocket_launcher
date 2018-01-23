@@ -10,7 +10,7 @@ const int rocket1 = 2;      // the number of the rocktet 1 insert pin
 const int rocket2 = A0;
 const int rocket3 = A1;
 const int spd_low = 100;    // low speed value
-const int spd_high = 200;   // high speed value
+const int spd_high = 300;   // high speed value
 
 
 // variables will change:

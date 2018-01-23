@@ -22,22 +22,25 @@ def write_command(pos):  #manipuliert ein bit in eienem byte
     print("Output:", output)
     ser.write([output])
     
-def cmd_up():       
-   write_command(4)
+def cmd_up(e):       
+    write_command(4)
         
-def cmd_down():     #Bit 3
+def cmd_down(e):     #Bit 3
     write_command(3)
 
-def cmd_left():     #Bit 1
+def cmd_left(e):     #Bit 1
     write_command(1)
 
-def cmd_right():    #Bit 2
+def cmd_right(e):    #Bit 2
     write_command(2)
 
-def cmd_fire():     #Bit 5
+def cmd_fire(e):     #Bit 5
     write_command(5)
 
-def cmd_spd():      #Bit 0
+def cmd_stop(e):
+    write_command(0)
+	
+def cmd_spd(e):      #Bit 0
     global speed_mode
     if speed_mode:
         speed_mode = False
@@ -51,16 +54,15 @@ def key(event):
     if (event.char == 'q'):
         print("quit")
         root.quit
-    elif(event.char == 'w'):
-        cmd_up()
-    elif(event.char == 's'):
-        cmd_down()
-    elif(event.char == 'a'):
-        cmd_left()
-    elif(event.char == 'd'):
-        cmd_right()
-    elif(event.char == 'f'):
-        cmd_fire()
+
+root.bind("<KeyPress-w>", cmd_up)
+root.bind("<KeyPress-s>", cmd_down)
+root.bind("<KeyPress-a>", cmd_left)
+root.bind("<KeyPress-d>", cmd_right)
+root.bind("<KeyPress-f>", cmd_fire)
+root.bind("<KeyRelease>", cmd_stop)
+
+
 
 #Create a label with instructions
 #label = tkinter.Label(root, text='Press 0-9 to send a number, or "q" to quit')
