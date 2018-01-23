@@ -60,6 +60,7 @@ void setup() {        // put your setup code here, to run once:
   pinMode(rocket1, INPUT);
   pinMode(rocket2, INPUT);
   pinMode(rocket3, INPUT);
+  pinMode(LED_BUILTIN, OUTPUT);
   
   // set up Serial library at 9600 bps
   Serial.begin(9600);
@@ -83,14 +84,11 @@ void getDataFromPC() {
   previousMillis = millis();
 
     // receive data from PC and save it into inputBuffer
-  if(Serial.available() > 0 && fail == 0) {
-    char x = Serial.read();
-  }
-    // set all bits to 0 if cycle is to slow or communication lags
-  if(fail == 1)  {
-    char x = 0;
+  if(Serial.available() > 0) {
+    x = Serial.read();
   }
 }
+
 
 
 void analyze_byte() {
@@ -103,10 +101,12 @@ void analyze_byte() {
   }
   
   if(x&(1<<1))   {    //bit 1 is set
-    go_azi_left == 1;
-  }
+    //go_azi_left == 1;
+    digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on
+  }  
   else {
-    go_azi_left == 0;
+    //go_azi_left == 0;
+    //digitalWrite(LED_BUILTIN, LOW);   // turn the LED off
   }
 
   if(x&(1<<2))  {    //bit 2 is set
