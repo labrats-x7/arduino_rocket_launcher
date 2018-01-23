@@ -15,13 +15,12 @@ root.geometry('400x400')
 root.title("RocketLauncher")
 
 
-
 def write_command(pos):  #manipuliert ein bit in eienem byte
     output = 1 << pos
     if speed_mode:
         output |= 1
     print("Output:", output)
-    ser.write(output)
+    ser.write([output])
     
 def cmd_up():       
    write_command(4)
