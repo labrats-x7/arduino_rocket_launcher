@@ -26,7 +26,7 @@ int go_ele_down = 0;   // variable for elevation turn down command
 int go_ele_up = 0;   // variable for elevation turn up command
 int fire_shot = 0;   // variable for rocket fire signal status
 int fire_state = 0;   //variable for the fire turn mechanism feedback
-byte x = 0;   //variable for serial input
+char x = 0;   //variable for serial input
 int fail = 0;   // variable for validating connection status
 
 
@@ -81,15 +81,12 @@ void loop() {
 
 
 void getDataFromPC() {
-  previousMillis = millis();
 
     // receive data from PC and save it into inputBuffer
   if(Serial.available() > 0) {
     x = Serial.read();
   }
 }
-
-
 
 void analyze_byte() {
 
@@ -106,9 +103,9 @@ void analyze_byte() {
   }  
   else {
     //go_azi_left == 0;
-    //digitalWrite(LED_BUILTIN, LOW);   // turn the LED off
+    digitalWrite(LED_BUILTIN, LOW);   // turn the LED off
   }
-
+  
   if(x&(1<<2))  {    //bit 2 is set
     go_azi_right == 1;
   }
