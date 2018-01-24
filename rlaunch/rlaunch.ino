@@ -3,14 +3,15 @@
 
 // constants won't change. They're used here to set pin numbers and motor speed values:
 const int azi_left_stop = A2;     // the number of the azimuth left stop switch pin
-const int azi_right_stop = A3;     // the number of the azimuth right stop switch pin
+const int azi_right_stop = A3;    // the number of the azimuth right stop switch pin
 const int ele_down_stop = A4;     // the number of the elevation down stop switch pin
-const int ele_up_stop = A5;     // the number of the elevation up stop switch pin
-const int rocket1 = 2;      // the number of the rocktet 1 insert pin
-const int rocket2 = A0;
-const int rocket3 = A1;
+const int ele_up_stop = A5;       // the number of the elevation up stop switch pin
+const int rocket1 = 2;      // the number of the "rocktet1 inserted" pin
+const int rocket2 = 13;     // the number of the "rocktet2 inserted" pin
+const int rocket3 = A1;     // the number of the "rocktet3 inserted" pin
+const int fire_state_pin = A0;  // the number of the fire_state pin for the 3 round fire mechanism
 const int spd_low = 100;    // low speed value
-const int spd_high = 300;   // high speed value
+const int spd_high = 255;   // high speed value
 
 
 // variables will change:
@@ -25,7 +26,8 @@ int go_azi_right = 0;   // variable for azimuth turn right command
 int go_ele_down = 0;   // variable for elevation turn down command
 int go_ele_up = 0;   // variable for elevation turn up command
 int fire_shot = 0;   // variable for rocket fire signal status
-int fire_state = 0;   //variable for the fire turn mechanism feedback
+int fire_state = 0; // variable for fire mechanics state
+int fire_state_old = 1; // variable for signal detection
 char x = 0;   //variable for serial input
 int fail = 0;   // variable for validating connection status
 
@@ -39,37 +41,35 @@ void fire();
 //void sec();
 
 
-unsigned long currentMillis = 0;
-unsigned long previousMillis = 0;        // will store last time data was recieved
+// unsigned long currentMillis = 0;
+// unsigned long previousMillis = 0;        // will store last time data was recieved
 
 
-AF_DCMotor azi_motor(1);  // azimuth motor on port 1
-AF_DCMotor ele_motor(2);  // elevation motor on port 2
+AF_DCMotor azi_motor(1, MOTOR12_8KHZ);  // azimuth motor on port 1
+AF_DCMotor ele_motor(2, MOTOR12_8KHZ);  // elevation motor on port 2
 AF_DCMotor fire_motor(3);   // fire motor on port 3
 
 
-
-void setup() {        // put your setup code here, to run once:
+void setup() {    // put your setup code here, to run once:
 
   // initialize the input/output pins:
   pinMode(azi_left_stop, INPUT);
   pinMode(azi_right_stop, INPUT);
   pinMode(ele_down_stop, INPUT);
   pinMode(ele_up_stop, INPUT);
-  pinMode(fire_state, INPUT);
+  pinMode(fire_state_pin, INPUT);
   pinMode(rocket1, INPUT);
   pinMode(rocket2, INPUT);
   pinMode(rocket3, INPUT);
-  pinMode(LED_BUILTIN, OUTPUT);
   
   // set up Serial library at 9600 bps
   Serial.begin(9600);
-  Serial.println("Arduino is ready");
+  //Serial.println("Arduino is ready");
 }
 
 
 void loop() {
-  // put your main code here, to run repeatedly:
+  
   getDataFromPC();
   analyze_byte();
   setspeed();
@@ -87,6 +87,7 @@ void getDataFromPC() {
     x = Serial.read();
   }
 }
+
 
 void analyze_byte() {
 
@@ -131,15 +132,6 @@ void analyze_byte() {
   else  {
     fire_shot = 0;
   }
-/* Fire 2 & 3 alt
-  if(x&(1<<6))   {    //bit 6 is set
-
-  }
-
-  if(x&(1<<7))   {    //bit 7 is set
-   
-  }
-*/
 }
 
 
@@ -160,8 +152,7 @@ void azimuth()  {
       azi_motor.run(RELEASE);  // turn on azimuth motor
       azi_motor.setSpeed(spd_var);
       azi_motor.run(FORWARD);
-      Serial.println("azimuth left");
-      digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on
+      //Serial.println("azimuth left");
     }
 
     // turn right
@@ -169,13 +160,12 @@ void azimuth()  {
       azi_motor.run(RELEASE);  // turn on azimuth motor
       azi_motor.setSpeed(spd_var);
       azi_motor.run(BACKWARD);
-      Serial.println("azimuth right");
+      //Serial.println("azimuth right");
     }
     
     // power down azimuth motor
     if (go_azi_left == 0 && go_azi_right == 0)  {
       azi_motor.run(RELEASE);
-      digitalWrite(LED_BUILTIN, LOW);   // turn the LED off
     }
 }
 
@@ -187,7 +177,7 @@ void elevation()  {
       ele_motor.run(RELEASE);    // turn on elevation motor
       ele_motor.setSpeed(spd_var);
       ele_motor.run(FORWARD);
-      Serial.println("elevation down");
+      //Serial.println("elevation down");
     }
 
     // turn up
@@ -195,7 +185,7 @@ void elevation()  {
       ele_motor.run(RELEASE);    // turn on elevation motor
       ele_motor.setSpeed(spd_var);
       ele_motor.run(BACKWARD);
-      Serial.println("elevation up");
+      //Serial.println("elevation up");
     }
     
     // power down elevation motor
@@ -206,17 +196,24 @@ void elevation()  {
 
 
 void fire()  {
+  
+fire_state = digitalRead(fire_state_pin);
 
-  if (fire_state) {
+  if (fire_shot == 1 && fire_state == 1) {
     fire_motor.run(RELEASE);    // turn on elevation motor
-    fire_motor.setSpeed(spd_var);
+    fire_motor.setSpeed(255);
     fire_motor.run(FORWARD);
-    Serial.println("fire_Motor running");
+    //Serial.println("fire_Motor running");
   }
-    
+  
+  if (fire_state == 0) {
+    fire_state_old = fire_state;
+  }
+  
   // power down fire motor
-  if (fire_state == 0)  {
-    ele_motor.run(RELEASE);
+  if (fire_state == 1 && fire_state_old == 0)  {
+    fire_motor.run(RELEASE);
+    fire_state_old = fire_state;
   }
 }
 

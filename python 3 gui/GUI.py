@@ -40,7 +40,7 @@ def cmd_fire(e):     #Bit 5
 def cmd_stop(e):
     write_command(0)
 	
-def cmd_spd(e):      #Bit 0
+def cmd_spd():      #Bit 0
     global speed_mode
     if speed_mode:
         speed_mode = False
