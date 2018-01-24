@@ -3,14 +3,14 @@
 
 // constants won't change. They're used here to set pin numbers and motor speed values:
 const int azi_left_stop = A2;     // the number of the azimuth left stop switch pin
-const int azi_right_stop = A3;    // the number of the azimuth right stop switch pin
+const int azi_right_stop = A1;    // the number of the azimuth right stop switch pin
 const int ele_down_stop = A4;     // the number of the elevation down stop switch pin
 const int ele_up_stop = A5;       // the number of the elevation up stop switch pin
 const int rocket1 = 2;      // the number of the "rocktet1 inserted" pin
 const int rocket2 = 13;     // the number of the "rocktet2 inserted" pin
-const int rocket3 = A1;     // the number of the "rocktet3 inserted" pin
+const int rocket3 = A3;     // the number of the "rocktet3 inserted" pin
 const int fire_state_pin = A0;  // the number of the fire_state pin for the 3 round fire mechanism
-const int spd_low = 100;    // low speed value
+const int spd_low = 150;    // low speed value
 const int spd_high = 255;   // high speed value
 
 
@@ -30,6 +30,7 @@ int fire_state = 0; // variable for fire mechanics state
 int fire_state_old = 1; // variable for signal detection
 char x = 0;   //variable for serial input
 int fail = 0;   // variable for validating connection status
+int fire_initial_pos = 0; //variable for positioning fire mechanics at first startup
 
 
 void getDataFromPC();
@@ -146,9 +147,12 @@ void setspeed() {
 
 
 void azimuth()  {
+
+    azi_left_stop_state = digitalRead(azi_left_stop);
+    azi_right_stop_state = digitalRead(azi_right_stop);
   
     // turn left
-    if (go_azi_left == 1 /*&& azi_left_stop_state == 0 && go_azi_right == 0 */) {
+    if (go_azi_left == 1 && azi_left_stop_state == 0) {
       azi_motor.run(RELEASE);  // turn on azimuth motor
       azi_motor.setSpeed(spd_var);
       azi_motor.run(FORWARD);
@@ -156,11 +160,21 @@ void azimuth()  {
     }
 
     // turn right
-    if (go_azi_right == 1 /* && azi_right_stop_state == 0 && go_azi_left == 0 */) {
+    if (go_azi_right == 1 && azi_right_stop_state == 0) {
       azi_motor.run(RELEASE);  // turn on azimuth motor
       azi_motor.setSpeed(spd_var);
       azi_motor.run(BACKWARD);
       //Serial.println("azimuth right");
+    }
+    
+    // left end stop
+    if (go_azi_left == 1 && azi_left_stop_state == 1) {
+      go_azi_left = 0;
+    }
+
+    // right end stop
+    if (go_azi_right == 1 && azi_right_stop_state == 1) {
+      go_azi_right = 0;
     }
     
     // power down azimuth motor
@@ -171,9 +185,12 @@ void azimuth()  {
 
 
 void elevation()  {
+
+    ele_down_stop_state = digitalRead(ele_down_stop);
+    ele_up_stop_state = digitalRead(ele_up_stop);
   
     // turn down
-    if (go_ele_down == 1 && ele_down_stop_state == 0 && go_ele_up == 0) {
+    if (go_ele_down == 1 && ele_down_stop_state == 0) {
       ele_motor.run(RELEASE);    // turn on elevation motor
       ele_motor.setSpeed(spd_var);
       ele_motor.run(FORWARD);
@@ -181,15 +198,25 @@ void elevation()  {
     }
 
     // turn up
-    if (go_ele_up == 1 && ele_up_stop_state == 0 && go_ele_down == 0) {
+    if (go_ele_up == 1 && ele_up_stop_state == 0) {
       ele_motor.run(RELEASE);    // turn on elevation motor
       ele_motor.setSpeed(spd_var);
       ele_motor.run(BACKWARD);
       //Serial.println("elevation up");
     }
+
+    // lower end stop
+    if (go_ele_down == 1 && ele_down_stop_state == 1) {
+      go_ele_down = 0;
+    }
+
+    // upper end stop
+    if (go_ele_up == 1 && ele_up_stop_state == 1) {
+      go_ele_up = 0;
+    }
     
     // power down elevation motor
-    if (go_ele_down == 0 & go_ele_up ==0)  {
+    if (go_ele_down == 0 & go_ele_up == 0)  {
       ele_motor.run(RELEASE);
     }
 }
@@ -199,8 +226,17 @@ void fire()  {
   
 fire_state = digitalRead(fire_state_pin);
 
+  // move fire mechanism in correct position if out of initial position (powerdown while fireing)
+  if (fire_initial_pos == 0 && fire_state == 0)  {
+    fire_motor.run(RELEASE);    // turn on fire motor
+    fire_motor.setSpeed(255);
+    fire_motor.run(FORWARD);
+    //Serial.println("fire_Motor initial run");
+    fire_initial_pos = 1;
+  }
+
   if (fire_shot == 1 && fire_state == 1) {
-    fire_motor.run(RELEASE);    // turn on elevation motor
+    fire_motor.run(RELEASE);    // turn on fire motor
     fire_motor.setSpeed(255);
     fire_motor.run(FORWARD);
     //Serial.println("fire_Motor running");
@@ -212,6 +248,7 @@ fire_state = digitalRead(fire_state_pin);
   
   // power down fire motor
   if (fire_state == 1 && fire_state_old == 0)  {
+    delay(100); // move fire mechaics a bit further to prevent the switch not to be pressed enough
     fire_motor.run(RELEASE);
     fire_state_old = fire_state;
   }
