@@ -5,10 +5,10 @@
 const int azi_left_stop = A2;     // the number of the azimuth left stop switch pin
 const int azi_right_stop = A1;    // the number of the azimuth right stop switch pin
 const int ele_down_stop = A4;     // the number of the elevation down stop switch pin
-const int ele_up_stop = A5;       // the number of the elevation up stop switch pin
-const int rocket1 = 2;      // the number of the "rocktet1 inserted" pin
-const int rocket2 = 13;     // the number of the "rocktet2 inserted" pin
-const int rocket3 = A3;     // the number of the "rocktet3 inserted" pin
+const int ele_up_stop = A3;       // the number of the elevation up stop switch pin
+//const int rocket1 = 2;      // the number of the "rocktet1 inserted" pin
+//const int rocket2 = 13;     // the number of the "rocktet2 inserted" pin
+//const int rocket3 = A5;     // the number of the "rocktet3 inserted" pin
 const int fire_state_pin = A0;  // the number of the fire_state pin for the 3 round fire mechanism
 const int spd_low = 150;    // low speed value
 const int spd_high = 255;   // high speed value
@@ -59,9 +59,9 @@ void setup() {    // put your setup code here, to run once:
   pinMode(ele_down_stop, INPUT);
   pinMode(ele_up_stop, INPUT);
   pinMode(fire_state_pin, INPUT);
-  pinMode(rocket1, INPUT);
-  pinMode(rocket2, INPUT);
-  pinMode(rocket3, INPUT);
+  // pinMode(rocket1, INPUT);
+  // pinMode(rocket2, INPUT);
+  // pinMode(rocket3, INPUT);
   
   // set up Serial library at 9600 bps
   Serial.begin(9600);
